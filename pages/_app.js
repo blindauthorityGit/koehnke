@@ -7,7 +7,7 @@ export default function App({ Component, pageProps }) {
     return (
         <AppointmentModalProvider>
             <Menu />
-            <Component {...pageProps} />;
+            <Component {...pageProps} />
             <Footer />
         </AppointmentModalProvider>
     );
