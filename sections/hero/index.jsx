@@ -1,121 +1,25 @@
 import Image from "next/image";
-import Link from "next/link";
 import { H1 } from "@/typography/headlines";
-import { BasicButton, PrimaryButton } from "@/components/buttons";
+import { PrimaryButton } from "@/components/buttons";
 import { BsCalendar } from "react-icons/bs";
 import { urlFor } from "@/function/urlFor";
-
-/**
- * Einmalige Zuordnung für Singletons ohne slug/title.
- * Vorteil: kein Hardcoding in 10 Komponenten – nur hier zentral.
- */
-const SINGLETON_ROUTES_BY_ID = {
-    startPage: "/",
-    servicesPage: "/leistungen",
-    // settings: "/settings" // normalerweise nicht öffentlich
-    // teamSection: "/team"  // wenn du sowas hast
-};
-
-function slugifyFromTitle(title = "") {
-    return title
-        .toLowerCase()
-        .trim()
-        .replace(/ä/g, "ae")
-        .replace(/ö/g, "oe")
-        .replace(/ü/g, "ue")
-        .replace(/ß/g, "ss")
-        .replace(/[^a-z0-9]+/g, "_")
-        .replace(/_+/g, "_")
-        .replace(/^_|_$/g, "");
-}
-
-function resolveInternalHref(internalLink) {
-    if (!internalLink) return null;
-
-    // 1) "normale" Seiten/Docs mit slug
-    if (internalLink.slug) return `/${internalLink.slug}`;
-
-    // 2) Fallback via title (falls vorhanden)
-    if (internalLink.title) return `/${slugifyFromTitle(internalLink.title)}`;
-
-    // 3) Singletons ohne slug/title -> Route via documentId
-    if (internalLink._id && SINGLETON_ROUTES_BY_ID[internalLink._id]) {
-        return SINGLETON_ROUTES_BY_ID[internalLink._id];
-    }
-
-    // 4) Optional: generischer Fallback (nicht empfohlen, aber möglich)
-    // if (internalLink._type) return `/${internalLink._type}`;
-
-    return null;
-}
+import { useAppointmentModal } from "@/components/appointments/appointmentModalProvider";
 
 export default function Hero({ data }) {
+    const { openAppointment } = useAppointmentModal();
+
     if (!data) return null;
 
-    const { heroTitle, heroSubtitle, heroButtons = [], heroImage } = data;
+    const { heroTitle, heroSubtitle, heroImage } = data;
 
     const imageUrl = heroImage ? urlFor(heroImage).url() : null;
     const imageAlt = heroImage?.isDecorative ? "" : heroImage?.alt || heroTitle || "";
-
-    const renderButton = (btn) => {
-        const {
-            _key,
-            label,
-            variant = "primary",
-            linkType = "internal",
-            internalLink,
-            externalUrl,
-            ariaLabel,
-            opensInNewTab,
-        } = btn || {};
-
-        if (!label) return null;
-
-        let href = null;
-
-        if (linkType === "external") {
-            href = externalUrl || null;
-        } else {
-            href = resolveInternalHref(internalLink);
-        }
-
-        if (!href) return null;
-
-        const ButtonComponent = variant === "primary" ? PrimaryButton : BasicButton;
-
-        const buttonProps = {
-            icon: <BsCalendar />,
-            variant: variant === "primary" ? "mint" : undefined,
-            "aria-label": ariaLabel || label,
-        };
-
-        // EXTERNAL
-        if (linkType === "external") {
-            return (
-                <a
-                    key={_key || label + href}
-                    href={href}
-                    target={opensInNewTab ? "_blank" : undefined}
-                    rel={opensInNewTab ? "noopener noreferrer" : undefined}
-                >
-                    <ButtonComponent {...buttonProps}>{label}</ButtonComponent>
-                </a>
-            );
-        }
-
-        // INTERNAL
-        return (
-            <Link key={_key || label + href} href={href}>
-                <ButtonComponent {...buttonProps}>{label}</ButtonComponent>
-            </Link>
-        );
-    };
 
     return (
         <section
             className="
         relative overflow-hidden bg-primary-50
-        pt-10 pb-16 md:pb-32 lg:pt-24 lg:h-[720px] 2xl:h-[860px]
+        pt-10 pb-10 md:pb-32 lg:pt-24 lg:h-[720px] 2xl:h-[860px]
         h-[calc(100svh-120px)] md:min-h-0
       "
         >
@@ -127,9 +31,11 @@ export default function Hero({ data }) {
                         alt={imageAlt}
                         fill
                         priority
-                        className="object-cover object-right !left-[20%]"
+                        className="object-cover object-right"
                         {...(heroImage?.isDecorative ? { role: "presentation", "aria-hidden": true } : {})}
                     />
+                    {/* Mobile overlay for readability */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-primary-50/85 via-primary-50/55 to-primary-50/95" />
                 </div>
             )}
 
@@ -148,23 +54,37 @@ export default function Hero({ data }) {
             )}
 
             {/* CONTENT */}
-            <div className="container relative z-10 mx-auto h-full">
+            <div className="container relative z-10 mx-auto h-full px-4">
                 {/* MOBILE */}
                 <div className="md:hidden flex h-full">
-                    <div className="flex flex-col justify-end w-full max-w-sm mt-24 mb-2">
-                        {heroSubtitle && (
-                            <p className="text-base font-body mb-4 leading-relaxed tracking-wide text-delft">
-                                {heroSubtitle}
-                            </p>
-                        )}
+                    <div className="w-full flex flex-col justify-end pb-6">
+                        {/* Content Card */}
+                        <div className="w-full max-w-[520px] rounded-[28px] bg-white/80 backdrop-blur-md ring-1 ring-black/10 p-5">
+                            {heroSubtitle && (
+                                <p className="text-sm font-body mb-3 leading-relaxed tracking-wide text-delft/85">
+                                    {heroSubtitle}
+                                </p>
+                            )}
 
-                        <H1 className="mt-3 text-delft font-thin text-3xl leading-snug">{heroTitle}</H1>
+                            <H1 className="text-delft font-thin text-[2.1rem] leading-[1.05]">{heroTitle}</H1>
 
-                        {heroButtons.length > 0 && (
-                            <div className="mt-10 flex flex-col gap-3">
-                                {heroButtons.map(renderButton).filter(Boolean)}
+                            <div className="mt-5 flex flex-col gap-3">
+                                <PrimaryButton
+                                    type="button"
+                                    onClick={openAppointment}
+                                    icon={<BsCalendar />}
+                                    className="w-full justify-center"
+                                    variant="mint"
+                                >
+                                    Termin vereinbaren
+                                </PrimaryButton>
                             </div>
-                        )}
+
+                            <p className="mt-3 text-xs text-delft/60 leading-relaxed">
+                                Hinweis: Auf Mobilgeräten öffnen wir eine eigene Terminseite. Am Desktop erscheint das
+                                Termin-Modal.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -188,11 +108,11 @@ export default function Hero({ data }) {
                         </p>
                     )}
 
-                    {heroButtons.length > 0 && (
-                        <div className="mt-16 flex flex-col sm:flex-row gap-4">
-                            {heroButtons.map(renderButton).filter(Boolean)}
-                        </div>
-                    )}
+                    <div className="mt-12 flex flex-col sm:flex-row gap-4">
+                        <PrimaryButton type="button" onClick={openAppointment} icon={<BsCalendar />} variant="mint">
+                            Termin vereinbaren
+                        </PrimaryButton>
+                    </div>
                 </div>
             </div>
         </section>

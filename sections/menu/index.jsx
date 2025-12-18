@@ -5,6 +5,7 @@ import Logo from "@/assets/logo.svg";
 import Burger from "@/assets/burger.svg";
 import { FiCalendar, FiX } from "react-icons/fi";
 import { PrimaryButton } from "@/components/buttons";
+import { useAppointmentModal } from "@/components/appointments/appointmentModalProvider";
 
 const dropdownVariants = {
     initial: { opacity: 0, y: 6, scale: 0.98, filter: "blur(6px)" },
@@ -95,6 +96,7 @@ function Dropdown({ label, href, items, id, openMenu, setOpenMenu }) {
 export default function Header() {
     const [openMenu, setOpenMenu] = useState(null); // Desktop-Dropdowns
     const [isMobileOpen, setIsMobileOpen] = useState(false);
+    const { openAppointment } = useAppointmentModal();
 
     // "leistungen" | "service" | null – nur ein Submenü gleichzeitig offen
     const [openMobileSection, setOpenMobileSection] = useState(null);
@@ -155,7 +157,8 @@ export default function Header() {
                         variant="compact"
                         icon={<FiCalendar />}
                         className="hidden lg:inline-flex"
-                        href="/termin"
+                        type="button"
+                        onClick={openAppointment}
                     >
                         Termin vereinbaren
                     </PrimaryButton>
@@ -351,10 +354,14 @@ export default function Header() {
 
                             <div className="pt-2 pb-4">
                                 <PrimaryButton
-                                    href="/termin"
                                     icon={<FiCalendar />}
                                     className="w-full justify-center"
-                                    onClick={closeMobile}
+                                    type="button"
+                                    onClick={() => {
+                                        closeMobile();
+                                        // kleiner Tick, damit das Menü zuerst sauber zugeht
+                                        setTimeout(() => openAppointment(), 0);
+                                    }}
                                 >
                                     Termin vereinbaren
                                 </PrimaryButton>
