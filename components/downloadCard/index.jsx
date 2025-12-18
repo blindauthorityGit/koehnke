@@ -1,7 +1,7 @@
-// components/downloads/DownloadCard.jsx
 import Image from "next/image";
 import Link from "next/link";
 import { urlFor } from "@/function/urlFor";
+import { resolveCtaButton } from "@/libs/resolveCtaButton";
 
 export default function DownloadCard({ card }) {
     if (!card) return null;
@@ -12,60 +12,14 @@ export default function DownloadCard({ card }) {
         ? urlFor(image.asset || image)
               .width(900)
               .height(520)
+              .fit("crop")
               .url()
         : null;
 
     const isDecorative = image?.isDecorative;
     const imageAlt = isDecorative ? "" : image?.alt || title || "";
 
-    const preparedButtons = (buttons || [])
-        .map((btn) => {
-            const {
-                label,
-                variant = "secondary",
-                linkType = "internal",
-                internalLink,
-                externalUrl,
-                ariaLabel,
-                opensInNewTab,
-            } = btn || {};
-
-            if (!label) return null;
-
-            let href = "#";
-
-            if (linkType === "external" && externalUrl) {
-                href = externalUrl;
-            } else if (linkType === "internal" && internalLink?.slug) {
-                href = `/${internalLink.slug}`;
-            } else if (linkType === "internal" && internalLink?._type === "servicesPage") {
-                href = "/leistungen";
-            }
-
-            if (!href || href === "#") return null;
-
-            const commonProps = { href, "aria-label": ariaLabel || label };
-
-            if (opensInNewTab) {
-                commonProps.target = "_blank";
-                commonProps.rel = "noopener noreferrer";
-            }
-
-            let base =
-                "inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-medium " +
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-500 transition";
-
-            if (variant === "primary") {
-                base += " bg-primary-700 text-white hover:bg-primary-800";
-            } else if (variant === "text") {
-                base += " bg-transparent text-primary-700 underline underline-offset-4 hover:text-primary-900";
-            } else {
-                base += " border border-primary-500 text-primary-700 bg-white hover:bg-primary-50";
-            }
-
-            return { key: btn?._key || label + href, commonProps, label, classes: base };
-        })
-        .filter(Boolean);
+    const resolvedButtons = (buttons || []).map(resolveCtaButton).filter(Boolean);
 
     return (
         <article className="rounded-3xl bg-white p-5 shadow-[0_18px_60px_rgba(15,23,42,0.06)]">
@@ -86,13 +40,27 @@ export default function DownloadCard({ card }) {
 
             {description && <p className="mt-3 text-sm leading-relaxed tracking-wide text-delft/80">{description}</p>}
 
-            {preparedButtons.length > 0 && (
+            {resolvedButtons.length > 0 && (
                 <div className="mt-6 space-y-3">
-                    {preparedButtons.map((b) => (
-                        <Link key={b.key} {...b.commonProps} className={b.classes}>
-                            {b.label}
-                        </Link>
-                    ))}
+                    {resolvedButtons.map((btn) =>
+                        btn.isInternal ? (
+                            <Link key={btn.key} href={btn.href} className={btn.classes} aria-label={btn.ariaLabel}>
+                                {btn.label}
+                            </Link>
+                        ) : (
+                            <a
+                                key={btn.key}
+                                href={btn.href}
+                                target={btn.opensInNewTab ? "_blank" : undefined}
+                                rel={btn.opensInNewTab ? "noopener noreferrer" : undefined}
+                                download={btn.download ? "" : undefined}
+                                className={btn.classes}
+                                aria-label={btn.ariaLabel}
+                            >
+                                {btn.label}
+                            </a>
+                        )
+                    )}
                 </div>
             )}
         </article>

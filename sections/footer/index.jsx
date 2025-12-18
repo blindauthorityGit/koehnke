@@ -1,6 +1,6 @@
 // components/layout/Footer.jsx
-
 import Image from "next/image";
+import Link from "next/link";
 import { BsTelephone, BsEnvelope } from "react-icons/bs";
 import PrimaryButton from "@/components/buttons/primaryButton";
 import PraxisLogo from "@/assets/logo.svg";
@@ -34,14 +34,16 @@ export default function Footer() {
                     <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
                         {/* Logo + Adresse */}
                         <div className="space-y-5">
-                            <div className="relative h-16 w-56">
-                                <Image
-                                    src={PraxisLogo}
-                                    alt="Zentrum für Zahnmedizin – Dr. Köhnke & Kollegen"
-                                    fill
-                                    className="object-contain"
-                                />
-                            </div>
+                            <Link href="/" aria-label="Zur Startseite">
+                                <div className="relative h-16 w-56">
+                                    <Image
+                                        src={PraxisLogo}
+                                        alt="Zentrum für Zahnmedizin – Dr. Köhnke & Kollegen"
+                                        fill
+                                        className="object-contain"
+                                    />
+                                </div>
+                            </Link>
 
                             <div className="space-y-1 text-sm text-delft">
                                 <p className="font-semibold text-primary-900">Zentrum für Zahnmedizin</p>
@@ -53,15 +55,24 @@ export default function Footer() {
                             <div className="mt-4 space-y-1 text-sm text-delft">
                                 <p className="flex items-center gap-2">
                                     <BsTelephone className="h-4 w-4" />
-                                    <span>
+                                    <a
+                                        href="tel:+496190989500"
+                                        className="hover:underline underline-offset-4"
+                                        aria-label="Telefonnummer anrufen"
+                                    >
                                         <span className="font-semibold">Telefon:</span> 06190 / 989500
-                                    </span>
+                                    </a>
                                 </p>
+
                                 <p className="flex items-center gap-2">
                                     <BsEnvelope className="h-4 w-4" />
-                                    <span>
+                                    <a
+                                        href="mailto:kollegen@zahnarzt-koehnke.de"
+                                        className="hover:underline underline-offset-4"
+                                        aria-label="E-Mail senden"
+                                    >
                                         <span className="font-semibold">E-Mail:</span> kollegen@zahnarzt-koehnke.de
-                                    </span>
+                                    </a>
                                 </p>
                             </div>
                         </div>
@@ -81,26 +92,81 @@ export default function Footer() {
                                     <span>Geschlossen</span>
                                 </div>
                             </div>
-
-                            <div className="mt-4">
-                                <PrimaryButton link="/kontakt" text="Termin vereinbaren" />
-                            </div>
                         </div>
 
                         {/* Leistungen */}
                         <div className="text-sm text-delft">
                             <p className="mb-3 text-base font-semibold text-primary-900">Leistungen</p>
                             <ul className="space-y-1">
-                                <li>Zahnerhaltung</li>
-                                <li>Zahnersatz</li>
-                                <li>Prophylaxe</li>
-                                <li>Implantologie</li>
-                                <li>Chirurgie</li>
-                                <li>Zahnästhetik</li>
-                                <li>Kinderbehandlung</li>
-                                <li>Angstpatienten</li>
-                                <li>Parodontologie</li>
-                                <li>Endodontie</li>
+                                {/* Passe Slugs an eure echten Service-URLs an */}
+                                <li>
+                                    <Link
+                                        className="hover:underline underline-offset-4"
+                                        href="/leistungen/zahnerhaltung"
+                                    >
+                                        Zahnerhaltung
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link className="hover:underline underline-offset-4" href="/leistungen/zahnersatz">
+                                        Zahnersatz
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link className="hover:underline underline-offset-4" href="/leistungen/prophylaxe">
+                                        Prophylaxe
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link
+                                        className="hover:underline underline-offset-4"
+                                        href="/leistungen/implantologie"
+                                    >
+                                        Implantologie
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link className="hover:underline underline-offset-4" href="/leistungen/chirurgie">
+                                        Chirurgie
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link
+                                        className="hover:underline underline-offset-4"
+                                        href="/leistungen/zahnaesthetik"
+                                    >
+                                        Zahnästhetik
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link
+                                        className="hover:underline underline-offset-4"
+                                        href="/leistungen/kinderbehandlung"
+                                    >
+                                        Kinderbehandlung
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link
+                                        className="hover:underline underline-offset-4"
+                                        href="/leistungen/angstpatienten"
+                                    >
+                                        Angstpatienten
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link
+                                        className="hover:underline underline-offset-4"
+                                        href="/leistungen/parodontologie"
+                                    >
+                                        Parodontologie
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link className="hover:underline underline-offset-4" href="/leistungen/endodontie">
+                                        Endodontie
+                                    </Link>
+                                </li>
                             </ul>
                         </div>
 
@@ -108,14 +174,34 @@ export default function Footer() {
                         <div className="text-sm text-delft">
                             <p className="mb-3 text-base font-semibold text-primary-900">Service &amp; Kontakt</p>
                             <ul className="space-y-1 mb-4">
-                                <li>Kontakt</li>
-                                <li>Karriere</li>
+                                <li>
+                                    <Link className="hover:underline underline-offset-4" href="/kontakt">
+                                        Kontakt
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link className="hover:underline underline-offset-4" href="/karriere">
+                                        Karriere
+                                    </Link>
+                                </li>
                             </ul>
 
                             <ul className="space-y-1">
-                                <li>Impressum</li>
-                                <li>Datenschutz</li>
-                                <li>Barrierefreiheitserklärung</li>
+                                <li>
+                                    <Link className="hover:underline underline-offset-4" href="/impressum">
+                                        Impressum
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link className="hover:underline underline-offset-4" href="/datenschutz">
+                                        Datenschutz
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link className="hover:underline underline-offset-4" href="/barrierefreiheit">
+                                        Barrierefreiheitserklärung
+                                    </Link>
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -125,7 +211,14 @@ export default function Footer() {
                 <div className="border-t border-primary-100">
                     <div className="mx-auto max-w-6xl px-4 py-4 text-xs text-delft/70 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                         <span>© {new Date().getFullYear()} Zentrum für Zahnmedizin – Dr. Köhnke &amp; Kollegen</span>
-                        <span>Webdesign &amp; Entwicklung: Atelier Buchner</span>
+                        <a
+                            href="https://www.sabocon.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline underline-offset-4"
+                        >
+                            Webdesign &amp; Entwicklung: Sabocon GmbH
+                        </a>
                     </div>
                 </div>
             </div>

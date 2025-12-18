@@ -31,8 +31,8 @@ export async function getStaticProps() {
 }
 
 export default function Home({ startPage, settings, teamMembers, services }) {
-    console.log(startPage);
     const textImageSectionData = startPage?.textImageSection || null;
+    const galleryImages = startPage?.gallery || [];
 
     return (
         <div className="min-h-screen bg-primary-50">
@@ -40,11 +40,11 @@ export default function Home({ startPage, settings, teamMembers, services }) {
                 <Hero data={startPage} settings={settings} />
                 <InfoBar />
                 <MobileBottomBar />
-                <TextImage section={textImageSectionData} id="welcome" whiteBG={false} withWave={false}></TextImage>
+                <TextImage section={textImageSectionData} id="welcome" whiteBG={false} withWave={false} />
                 <LeistungenSection services={services} />
                 <TeamSection members={teamMembers} />
-                <AppointmentCTASection></AppointmentCTASection>
-                <ImageGrid></ImageGrid>
+                <AppointmentCTASection />
+                <ImageGrid images={galleryImages} />
             </main>
         </div>
     );

@@ -8,7 +8,7 @@ export const H1 = React.forwardRef(({ children, klasse = "" }, ref) => (
     <h1
         ref={ref}
         className={`
-  font-headline font-thin hyphens-auto break-words text-delft text-5xl lg:leading-20 2xl:leading-20 sm:text-5xl lg:text-7xl 2xl:text-7xl ${klasse}
+  font-headline font-thin hyphens-auto break-words text-delft text-4xl lg:leading-20 2xl:leading-20 sm:text-5xl lg:text-7xl 2xl:text-7xl ${klasse}
     `}
     >
         {children}

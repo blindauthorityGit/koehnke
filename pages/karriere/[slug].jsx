@@ -99,6 +99,7 @@ export default function JobDetailPage({ job }) {
             <JobApplyCTASection
                 title="Jetzt bewerben"
                 text={`Interesse an der Position "${job.job.title}"? Bewerben Sie sich unkompliziert und lernen Sie unser Team kennen.`}
+                jobSlug={job.job.slug} // 👈 DAS ist der entscheidende Punkt
             />
         </>
     );

@@ -26,12 +26,23 @@ export default function TextImageSection({
     const imageUrl = image
         ? urlFor(image.asset || image)
               .width(1200)
+              .fit("crop")
+              .crop("focalpoint")
               .url()
         : null;
 
     // Barrierefreiheit
     const isDecorative = image?.isDecorative;
     const imageAlt = isDecorative ? "" : image?.alt || title || "";
+
+    const portableTextComponents = {
+        block: {
+            normal: ({ children }) => <p className="mb-5 last:mb-0">{children}</p>,
+        },
+        marks: {
+            strong: ({ children }) => <strong className="font-semibold text-delft">{children}</strong>,
+        },
+    };
 
     // Buttons – gleich wie bisher
     const preparedButtons = (buttons || [])
@@ -142,7 +153,7 @@ export default function TextImageSection({
                     <div
                         className={`
                             relative h-[260px] overflow-hidden rounded-3xl
-                            sm:h-[320px] md:h-[380px] lg:h-[420px] lg:rounded-[48px]
+                            sm:h-[320px] md:h-[380px] lg:h-[620px] lg:rounded-[48px]
                             ${isImageRight ? "lg:order-2" : ""}
                         `}
                     >
@@ -177,7 +188,7 @@ export default function TextImageSection({
 
                     {body && body.length > 0 && (
                         <div className="prose tracking-wider prose-slate text-delft max-w-none text-base leading-relaxed md:text-[1.05rem]">
-                            <PortableText value={body} />
+                            <PortableText value={body} components={portableTextComponents} />
                         </div>
                     )}
 

@@ -2,100 +2,60 @@ export const homePageQuery = `
 {
   "startPage": *[_type == "startPage"][0]{
     seo,
-
     heroTitle,
     heroSubtitle,
-heroButtons[]{
-  _key,
-  label,
-  variant,
-  linkType,
-  ariaLabel,
-  opensInNewTab,
-  externalUrl,
-  internalLink->{
-    _id,
-    _type,
-    title,
-    "slug": slug.current
-  }
-},
 
-
-    heroImage{
-      ...,
-      asset->
+    heroButtons[]{
+      _key,
+      label,
+      variant,
+      linkType,
+      ariaLabel,
+      opensInNewTab,
+      externalUrl,
+      internalLink->{
+        _id,_type,title,
+        "slug": slug.current
+      }
     },
 
- "textImageSection": textImageSection{
-  layout,
-  title,
-  body,
-  image{
-    ...,
-    asset->,
-    alt,
-    isDecorative,
-    caption
-  },
-  buttons[]{
-    label,
-    variant,
-    linkType,
-    ariaLabel,
-    opensInNewTab,
-    internalLink->{
-      _type,
-      _id,
+    heroImage{..., asset->},
+
+    "textImageSection": textImageSection{
+      layout,
       title,
-      "slug": slug.current
+      body,
+      image{..., asset->, alt, isDecorative, caption},
+      buttons[]{
+        label, variant, linkType, ariaLabel, opensInNewTab,
+        internalLink->{_type,_id,title,"slug": slug.current},
+        externalUrl
+      }
     },
-    externalUrl
-  }
-},
-
 
     teamOverviewTitle,
     teamOverviewSubtitle,
-    teamMembers[]->{
-      _id,
-      title,
-      subtitle,
-      teaser,
-      image{..., asset->}
-    },
 
     gallery[]{
-      ...,
-      asset->
+      _key,
+      alt,
+      isDecorative,
+      caption,
+      asset->{
+        _id,
+        url,
+        metadata{ lqip }
+      }
     }
   },
 
-  "settings": *[_type == "settings"][0]{
-    businessName,
-    address,
-    contact,
-    openingHours
-  },
+  "settings": *[_type == "settings"][0]{ businessName, address, contact, openingHours },
 
-  "teamSection": *[_type == "teamSection"][0]{
-    title,
-    subtitle,
-    members[]->{
-      _id,
-      title,
-      subtitle,
-      teaser,
-      image{..., asset->}
-    }
-  },
+  "teamSection": *[_type == "teamSection"][0]{ title, subtitle, members[]->{_id,title,subtitle,teaser,image{...,asset->}} },
 
   "services": *[_type == "service" && defined(slug.current)]
     | order(order asc, title asc){
-      _id,
-      title,
-      "slug": slug.current,
-      teaser,
+      _id, title, "slug": slug.current, teaser,
       heroImage{..., asset->},
       image{..., asset->}
     }
@@ -425,18 +385,48 @@ export const patientServicesPageQuery = /* groq */ `
     cards[]{
       ...,
       image{..., alt, isDecorative, asset->},
-      buttonLink{
-        type,
-        newTab,
-        external,
-        internal->{_type, heroTitle}
+
+      button{
+        label,
+        variant,
+        linkType,
+        internalTargetType,
+        internalPath,
+        opensInNewTab,
+        ariaLabel,
+
+        internalLink->{ _type, slug },
+
+        file->{
+          file{ asset-> }
+        },
+
+        externalUrl
       }
     },
 
-    // ✅ genau wie dein Schema heißt:
     imgTextSection{
       ...,
-      image{..., alt, isDecorative, caption, asset->}
+      image{..., alt, isDecorative, caption, asset->},
+
+      buttons[]{
+        label,
+        variant,
+        linkType,
+        internalTargetType,
+        internalPath,
+        opensInNewTab,
+        ariaLabel,
+        forceDownload,
+
+        internalLink->{ _type, slug },
+
+        file->{
+          file{ asset-> }
+        },
+
+        externalUrl
+      }
     },
 
     seo
@@ -512,14 +502,19 @@ export const downloadsPageQuery = /* groq */ `
         label,
         variant,
         linkType,
+        internalTargetType,
+        internalPath,
         ariaLabel,
         opensInNewTab,
+        forceDownload,
 
-        // interner Link (dein Button-Objekt nutzt internalLink.slug in der TextImageSection)
         internalLink->{
           _type,
-          title,
-          "slug": slug.current
+          slug{current}
+        },
+
+        file->{
+          file{ asset-> }
         },
 
         externalUrl

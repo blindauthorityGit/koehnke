@@ -25,7 +25,7 @@ export default function PrimaryButton({
             onClick={onClick}
             className={clsx(
                 "inline-flex items-center gap-2 rounded-xl",
-                "px-6 py-3 text-sm md:px-8 md:py-4 md:text-base lg:px-12 lg:py-4 2xl:px-16 2xl:py-6",
+                "px-6 py-3 cursor-pointer text-sm md:px-8 md:py-4 md:text-base lg:px-12 lg:py-4 2xl:px-16 2xl:py-6",
                 "w-full lg:w-auto justify-center",
                 "font-medium tracking-wide transition-colors font-body",
                 variant === "compact" && "!px-5 !py-2 !text-xs !rounded-xl gap-1 !w-auto",

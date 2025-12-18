@@ -7,7 +7,6 @@ import { useAppointmentModal } from "@/components/appointments/appointmentModalP
 
 export default function Hero({ data }) {
     const { openAppointment } = useAppointmentModal();
-
     if (!data) return null;
 
     const { heroTitle, heroSubtitle, heroImage } = data;
@@ -18,10 +17,10 @@ export default function Hero({ data }) {
     return (
         <section
             className="
-        relative overflow-hidden bg-primary-50
-        pt-10 pb-10 md:pb-32 lg:pt-24 lg:h-[720px] 2xl:h-[860px]
-        h-[calc(100svh-120px)] md:min-h-0
-      "
+                relative overflow-hidden bg-primary-50
+                pt-10 pb-10 md:pb-32 lg:pt-24 lg:h-[720px] 2xl:h-[860px]
+                h-[calc(100svh-120px)] md:min-h-0
+            "
         >
             {/* MOBILE BG IMAGE */}
             {imageUrl && (
@@ -34,8 +33,8 @@ export default function Hero({ data }) {
                         className="object-cover object-right"
                         {...(heroImage?.isDecorative ? { role: "presentation", "aria-hidden": true } : {})}
                     />
-                    {/* Mobile overlay for readability */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-primary-50/85 via-primary-50/55 to-primary-50/95" />
+                    {/* softer overlay (weniger "milchig", aber Foto tritt zurück) */}
+                    <div className="absolute inset-0 bg-primary-50/40" />
                 </div>
             )}
 
@@ -56,19 +55,28 @@ export default function Hero({ data }) {
             {/* CONTENT */}
             <div className="container relative z-10 mx-auto h-full px-4">
                 {/* MOBILE */}
-                <div className="md:hidden flex h-full">
-                    <div className="w-full flex flex-col justify-end pb-6">
-                        {/* Content Card */}
-                        <div className="w-full max-w-[520px] rounded-[28px] bg-white/80 backdrop-blur-md ring-1 ring-black/10 p-5">
-                            {heroSubtitle && (
-                                <p className="text-sm font-body mb-3 leading-relaxed tracking-wide text-delft/85">
-                                    {heroSubtitle}
-                                </p>
-                            )}
+                <div className="md:hidden flex h-full items-end pb-6">
+                    <div className="w-full">
+                        {/* Content Card (ruhig, klar, freundlich) */}
+                        <div
+                            className="
+                                w-full max-w-[520px]
+                                rounded-[28px]
+                                bg-white
+                                shadow-md
+                                ring-1 ring-black/10
+                                px-6 py-6
+                            "
+                        >
+                            {/* Mobile hardcoded Subline */}
+                            <p className="mb-3 text-sm font-body leading-relaxed tracking-wide text-delft/80">
+                                Moderne Zahnmedizin mit persönlicher Betreuung.
+                            </p>
 
-                            <H1 className="text-delft font-thin text-[2.1rem] leading-[1.05]">{heroTitle}</H1>
+                            <H1 className="text-delft font-thin text-[1.9rem] leading-[1.15]">{heroTitle}</H1>
 
-                            <div className="mt-5 flex flex-col gap-3">
+                            {/* Button: UNVERÄNDERT */}
+                            <div className="mt-6 flex flex-col gap-3">
                                 <PrimaryButton
                                     type="button"
                                     onClick={openAppointment}
@@ -79,11 +87,6 @@ export default function Hero({ data }) {
                                     Termin vereinbaren
                                 </PrimaryButton>
                             </div>
-
-                            <p className="mt-3 text-xs text-delft/60 leading-relaxed">
-                                Hinweis: Auf Mobilgeräten öffnen wir eine eigene Terminseite. Am Desktop erscheint das
-                                Termin-Modal.
-                            </p>
                         </div>
                     </div>
                 </div>
@@ -92,12 +95,12 @@ export default function Hero({ data }) {
                 <div className="hidden md:block max-w-xl lg:max-w-2xl pt-14">
                     <H1
                         className="
-              text-delft font-thin
-              text-4xl leading-tight
-              sm:text-5xl
-              md:text-6xl
-              lg:text-7xl
-            "
+                            text-delft font-thin
+                            text-4xl leading-tight
+                            sm:text-5xl
+                            md:text-6xl
+                            lg:text-7xl
+                        "
                     >
                         {heroTitle}
                     </H1>
