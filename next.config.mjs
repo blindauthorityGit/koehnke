@@ -1,7 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
-  reactStrictMode: true,
+    reactStrictMode: true,
+
+    images: {
+        domains: ["cdn.sanity.io", "api.maptiler.com"], // Sanity-Bildquelle erlauben
+    },
 };
 
 export default nextConfig;

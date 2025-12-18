@@ -1,0 +1,194 @@
+// sections/servicesOverview/index.jsx
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+
+import { urlFor } from "@/function/urlFor";
+import { H2 } from "@/typography/headlines";
+import { PrimaryButton } from "@/components/buttons";
+
+const textVariants = {
+    initial: { opacity: 0, y: 8, filter: "blur(4px)" },
+    animate: {
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        transition: { duration: 0.25, ease: [0.16, 0.6, 0.25, 1] },
+    },
+    exit: {
+        opacity: 0,
+        y: -8,
+        filter: "blur(4px)",
+        transition: { duration: 0.18, ease: [0.4, 0.0, 0.2, 1] },
+    },
+};
+
+const imageVariants = {
+    initial: { opacity: 0, scale: 0.98 },
+    animate: {
+        opacity: 1,
+        scale: 1,
+        transition: { duration: 0.3, ease: [0.16, 0.6, 0.25, 1] },
+    },
+    exit: {
+        opacity: 0,
+        scale: 0.98,
+        transition: { duration: 0.18, ease: [0.4, 0.0, 0.2, 1] },
+    },
+};
+
+export default function ServicesOverview({ services = [] }) {
+    // Hooks IMMER ganz oben
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    // Wenn keine Services vorhanden, nichts rendern
+    if (!services.length) return null;
+
+    // falls sich die Anzahl ändert, Index begrenzen
+    const safeIndex = Math.min(activeIndex, services.length - 1);
+    const activeService = services[safeIndex];
+
+    const activeImageUrl = activeService?.image ? urlFor(activeService.image.asset || activeService.image).url() : null;
+
+    return (
+        <section className="bg-primary-50/70 py-16 md:py-20 lg:py-28">
+            <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                {/* MOBILE: Titel-Navigation als Scroll-Pills */}
+                <div className="mb-10 lg:hidden">
+                    <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2">
+                        {services.map((service, index) => (
+                            <button
+                                key={service._id || service.slug?.current || index}
+                                type="button"
+                                onClick={() => setActiveIndex(index)}
+                                className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition
+                                    ${
+                                        index === safeIndex
+                                            ? "border-primary-500 bg-primary-500 text-white shadow-sm"
+                                            : "border-primary-200 bg-white/60 text-primary-700 hover:border-primary-400 hover:bg-white"
+                                    }`}
+                            >
+                                {service.title}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div
+                    className="
+                        grid gap-10 lg:gap-14
+                        lg:grid-cols-[220px_minmax(0,1.25fr)_minmax(0,1.1fr)]
+                        items-start
+                    "
+                >
+                    {/* DESKTOP: linke Titel-Liste */}
+                    <aside className="hidden border-r border-primary-200 pr-10 lg:block">
+                        <ul className="space-y-4">
+                            {services.map((service, index) => {
+                                const isActive = index === safeIndex;
+                                return (
+                                    <li key={service._id || service.slug?.current || index}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setActiveIndex(index)}
+                                            className={`
+                                                group flex w-full items-center gap-3 text-left text-sm font-medium tracking-wide
+                                                transition
+                                                ${
+                                                    isActive
+                                                        ? "text-primary-900"
+                                                        : "text-primary-500 hover:text-primary-900"
+                                                }
+                                            `}
+                                        >
+                                            <span
+                                                className={`
+                                                    h-px w-8 transition-all
+                                                    ${
+                                                        isActive
+                                                            ? "bg-primary-700"
+                                                            : "bg-primary-200 group-hover:bg-primary-400"
+                                                    }
+                                                `}
+                                            />
+                                            <span
+                                                className={`
+                                                    transition
+                                                    ${
+                                                        isActive
+                                                            ? "text-primary-900"
+                                                            : "text-primary-500 group-hover:text-primary-900"
+                                                    }
+                                                `}
+                                            >
+                                                {service.title}
+                                            </span>
+                                        </button>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </aside>
+
+                    {/* MITTE: Text-Content */}
+                    <div className="relative">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={activeService._id || activeService.slug?.current || safeIndex}
+                                variants={textVariants}
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                                className="space-y-6 md:space-y-8"
+                            >
+                                <div className="space-y-4">
+                                    <H2 className="text-3xl md:text-4xl text-primary-900">{activeService.title}</H2>
+
+                                    {activeService.description && (
+                                        <p className="max-w-xl text-base md:text-lg leading-relaxed text-primary-700">
+                                            {activeService.description}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {activeService.slug?.current && (
+                                    <Link href={`/leistungen/${activeService.slug.current}`} passHref>
+                                        <PrimaryButton as="a">mehr erfahren</PrimaryButton>
+                                    </Link>
+                                )}
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
+
+                    {/* RECHTS: Bild */}
+                    <div className="relative mt-4 lg:mt-0">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={activeImageUrl || "no-image"}
+                                variants={imageVariants}
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                                className="
+                                    relative h-64 w-full overflow-hidden rounded-3xl bg-primary-100
+                                    shadow-lg md:h-72 lg:h-80 xl:h-96
+                                "
+                            >
+                                {activeImageUrl && (
+                                    <Image
+                                        src={activeImageUrl}
+                                        alt={activeService.title || ""}
+                                        fill
+                                        priority={safeIndex === 0}
+                                        className="h-full w-full object-cover"
+                                    />
+                                )}
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}

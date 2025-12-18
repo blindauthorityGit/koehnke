@@ -1,9 +1,99 @@
 @import "tailwindcss";
+@config "../tailwind.config.js";
+
 
 :root {
-  --background: #ffffff;
+  --background: #f3f8fd;
   --foreground: #171717;
 }
+
+@theme {
+  --font-headline: "the-seasons", "sans-serif";
+  --font-body: "open-sans", "sans-serif";
+  --breakpoint-3xl: 1920px;
+  /* ============================
+     PRIMARY – Himmelblau
+     (Palette aus Bild 1, Reihe 1)
+  ============================= */
+  --color-primary-50:  #F2F8FD;
+  --color-primary-100: #E4EFFA;
+  --color-primary-200: #C3DEF4;
+  --color-primary-300: #A8D2F0;
+  --color-primary-400: #51A6DF;
+  --color-primary-500: #2B8BCC;
+  --color-primary-600: #1C6EAD;
+  --color-primary-700: #18588C;
+  --color-primary-800: #174B75;
+  --color-primary-900: #194061;
+  --color-primary-950: #102841;
+
+  /* Brand Default */
+  --color-primary: #A8D2F0;
+
+  /* ============================
+     SECONDARY – Mint
+     (Palette aus Bild 1, Reihe 2)
+  ============================= */
+  --color-mint-50:  #F5F8F5;
+  --color-mint-100: #E8F0E9;
+  --color-mint-200: #D1E1D3;
+  --color-mint-300: #BDD4C0;
+  --color-mint-400: #80A885;
+  --color-mint-500: #5DAA64;
+  --color-mint-600: #49704E;
+  --color-mint-700: #3C5940;
+  --color-mint-800: #334836;
+  --color-mint-900: #2B3C2E;
+  --color-mint-950: #141F16;
+
+  /* Brand Default */
+  --color-mint: #BDD4C0;
+
+  /* ============================
+     SECONDARY – Delft Blue
+     (Palette aus Bild 1, Reihe 3)
+  ============================= */
+  --color-delft-50:  #F3F4FB;
+  --color-delft-100: #E3E6F6;
+  --color-delft-200: #CDD5F0;
+  --color-delft-300: #ABB8E5;
+  --color-delft-400: #8395D7;
+  --color-delft-500: #6674CB;
+  --color-delft-600: #535BBD;
+  --color-delft-700: #484AAD;
+  --color-delft-800: #3F3F8E;
+  --color-delft-900: #2F3061;
+  --color-delft-950: #252546;
+
+  /* Brand Default */
+  --color-delft: #2F3061;
+
+  /* ============================
+     NEUTRALFARBEN
+  ============================= */
+
+  /* Off White */
+  --color-offwhite: #FFFFF8;
+
+  /* Deep Forest */
+  --color-deepforest: #101014;
+
+}
+
+@layer utilities {
+.hero-shell {
+  background-color: white;
+
+  mask: url("/images/hero-mask.svg") no-repeat right center / cover;
+  -webkit-mask: url("/images/hero-mask.svg") no-repeat right center / cover;
+  mask-mode: luminance;
+  -webkit-mask-mode: luminance;
+}
+
+
+}
+
+
 
 @theme inline {
   --color-background: var(--background);
@@ -14,13 +104,18 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #f3f8fd;
+    --foreground: #f3f8fd;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family:  "open-sans", "sans-serif";
+}
+
+
+html {
+  hyphens: auto;
 }
