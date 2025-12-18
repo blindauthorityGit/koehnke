@@ -80,7 +80,15 @@ export default function ServicePage({ service, services, seo }) {
             <InfoBar />
 
             {/* INTRO SECTION ALS TEXT/BILD */}
-            {service.introSection && <TextImageSection section={service.introSection} id="service-intro" whiteBG />}
+            {service.introSection && (
+                <TextImageSection
+                    key={`intro-${service.slug}`} // 👈 remount bei Routewechsel
+                    noCenter
+                    section={service.introSection}
+                    id="service-intro"
+                    whiteBG
+                />
+            )}
 
             {/* Leistungen-Übersicht aus Sanity */}
             <LeistungenSection services={services} currentSlug={service.slug} headline="Weitere Leistungen" />

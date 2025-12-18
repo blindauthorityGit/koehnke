@@ -14,6 +14,7 @@ export default function TextImageSection({
     withWave = false,
     waveProps = {},
     whiteBG = false, // << NEU
+    noCenter = false, // 👈 NEU
 }) {
     if (!section) return null;
 
@@ -144,9 +145,9 @@ export default function TextImageSection({
         <section className={`w-full py-16 md:py-24 ${className}`} aria-labelledby={headingId}>
             <div
                 className={`
-                    container mx-auto flex flex-col gap-10 px-4 sm:px-6 lg:px-8
-                    ${imageUrl ? "lg:grid lg:grid-cols-2 lg:items-center lg:gap-16" : ""}
-                `}
+        container mx-auto flex flex-col gap-10 px-4 sm:px-6 lg:px-8
+        ${imageUrl ? `lg:grid lg:grid-cols-2 lg:gap-16 ${noCenter ? "" : "lg:items-center"}` : ""}
+    `}
             >
                 {/* IMAGE */}
                 {imageUrl && (

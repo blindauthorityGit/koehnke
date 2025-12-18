@@ -24,7 +24,7 @@ export default function ServiceDetailHero({ title, subtitle, image }) {
     const descId = subtitle ? "service-hero-desc" : undefined;
 
     return (
-        <section className="bg-primary-50 pt-12 pb-20" aria-labelledby={headingId} aria-describedby={descId}>
+        <section className="bg-primary-50 pt-12 lg:pt-2 pb-20" aria-labelledby={headingId} aria-describedby={descId}>
             <div
                 className="
                     container mx-auto px-4 md:px-6 lg:px-10
