@@ -42,7 +42,7 @@ export default function Home({ startPage, settings, teamMembers, services }) {
                 <MobileBottomBar />
                 <TextImage section={textImageSectionData} id="welcome" whiteBG={false} withWave={false} />
                 <LeistungenSection services={services} />
-                <TeamSection members={teamMembers} />
+                <TeamSection members={teamMembers.reverse()} />
                 <AppointmentCTASection />
                 <ImageGrid images={galleryImages} />
             </main>
