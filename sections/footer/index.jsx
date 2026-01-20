@@ -33,6 +33,7 @@ export default function Footer() {
                 <div className="mx-auto container px-4 py-16">
                     <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
                         {/* Logo + Adresse */}
+                        {/* Logo + Adresse */}
                         <div className="space-y-5">
                             <Link href="/" aria-label="Zur Startseite">
                                 <div className="relative h-16 w-56">
@@ -90,6 +91,30 @@ export default function Footer() {
                                     <span>08:00 - 14:00</span>
                                     <span>Sa - So</span>
                                     <span>Geschlossen</span>
+                                </div>
+                                {/* ✅ NEU: Zahnärztlicher Notdienst */}
+                                <div className="mt-4 rounded-2xl border border-primary-100 bg-primary-50/60 p-4">
+                                    <p className="text-sm font-semibold text-primary-900">Zahnärztlicher Notdienst</p>
+                                    <p className="mt-2 flex items-center gap-2">
+                                        <BsTelephone className="h-4 w-4" />
+                                        <a
+                                            href="tel:01805607011"
+                                            className="font-semibold hover:underline underline-offset-4"
+                                            aria-label="Notdienst anrufen"
+                                        >
+                                            01805 607011
+                                        </a>
+                                    </p>
+
+                                    <a
+                                        href="https://www.kzvh.de/patienten/notdienstKARTE/index.html"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="mt-2 inline-block text-sm text-primary-800 hover:underline underline-offset-4"
+                                        aria-label="Notdienst-Karte der Kassenzahnärztlichen Vereinigung Hessen öffnen"
+                                    >
+                                        Notdienst-Karte (KZV Hessen)
+                                    </a>
                                 </div>
                             </div>
                         </div>

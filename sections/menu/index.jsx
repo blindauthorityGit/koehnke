@@ -46,6 +46,14 @@ const serviceItems = [
     { label: "Online Anamnese", href: "/service/anamnese" }, // ggf. /service/online-anamnese
 ];
 
+const NOTDIENST = {
+    phoneDisplay: "01805 607011",
+    phoneHref: "tel:01805607011",
+    label: "Zahnärztlicher Notdienst",
+    linkLabel: "Notdienst-Karte (KZV Hessen)",
+    linkHref: "https://www.kzvh.de/patienten/notdienstKARTE/index.html",
+};
+
 function Dropdown({ label, href, items, id, openMenu, setOpenMenu }) {
     const isOpen = openMenu === id;
 
@@ -153,6 +161,29 @@ export default function Header() {
                         Kontakt
                     </Link>
 
+                    {/* ✅ NEU: Notdienst (Utility-Link, extern) */}
+                    {/* <div className="hidden lg:flex items-center gap-4">
+                        <a
+                            href={NOTDIENST.phoneHref}
+                            className="tracking-wider text-sm text-delft hover:text-primary-600 transition-colors"
+                            aria-label="Zahnärztlichen Notdienst anrufen"
+                        >
+                            Notdienst: <span className="font-semibold">{NOTDIENST.phoneDisplay}</span>
+                        </a>
+
+                        <span className="text-delft/30">|</span>
+
+                        <a
+                            href={NOTDIENST.linkHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="tracking-wider text-sm text-delft hover:text-primary-600 transition-colors"
+                            aria-label="Notdienst-Karte der KZV Hessen öffnen"
+                        >
+                            Notdienst-Karte
+                        </a>
+                    </div> */}
+
                     <PrimaryButton
                         variant="compact"
                         icon={<FiCalendar />}
@@ -238,7 +269,7 @@ export default function Header() {
                                             type="button"
                                             onClick={() =>
                                                 setOpenMobileSection((prev) =>
-                                                    prev === "leistungen" ? null : "leistungen"
+                                                    prev === "leistungen" ? null : "leistungen",
                                                 )
                                             }
                                             className="ml-4 inline-flex items-center justify-center"
@@ -350,6 +381,32 @@ export default function Header() {
                                 >
                                     Kontakt
                                 </Link>
+                            </div>
+
+                            {/* ✅ NEU: Notdienst Block (Mobile) */}
+                            <div className="mt-2 rounded-2xl border border-primary-100 bg-white/70 p-4">
+                                <p className="text-sm font-semibold text-primary-900">{NOTDIENST.label}</p>
+
+                                <div className="mt-2 flex flex-col gap-2">
+                                    <a
+                                        href={NOTDIENST.phoneHref}
+                                        className="inline-flex items-center justify-between rounded-xl bg-primary-50 px-3 py-2 text-sm tracking-wider text-delft hover:bg-primary-100 transition-colors"
+                                        aria-label="Zahnärztlichen Notdienst anrufen"
+                                    >
+                                        <span>Jetzt anrufen</span>
+                                        <span className="font-semibold">{NOTDIENST.phoneDisplay}</span>
+                                    </a>
+
+                                    <a
+                                        href={NOTDIENST.linkHref}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm tracking-wider text-delft hover:text-primary-600 hover:underline underline-offset-4 transition-colors"
+                                        aria-label="Notdienst-Karte der KZV Hessen öffnen"
+                                    >
+                                        {NOTDIENST.linkLabel}
+                                    </a>
+                                </div>
                             </div>
 
                             <div className="pt-2 pb-4">

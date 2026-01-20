@@ -163,7 +163,11 @@ export default function TextImageSection({
                             alt={imageAlt}
                             fill
                             sizes="(min-width: 1024px) 50vw, 100vw"
-                            className="object-cover"
+                            className={`
+    object-cover
+    object-[50%_20%] sm:object-[50%_25%] md:object-[50%_30%]
+    lg:object-center
+  `}
                             priority={false}
                             {...(isDecorative ? { role: "presentation", "aria-hidden": true } : {})}
                         />
@@ -210,7 +214,7 @@ export default function TextImageSection({
                                     <a key={btn.key} {...btn.commonProps} className={btn.classes}>
                                         {btn.label}
                                     </a>
-                                )
+                                ),
                             )}
                         </div>
                     )}
