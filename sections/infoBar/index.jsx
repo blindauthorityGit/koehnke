@@ -55,20 +55,32 @@ export default function InfoBar() {
                         </div>
 
                         {/* E-Mail */}
-                        <div className="flex flex-1 items-center gap-3 min-w-[230px]">
-                            <span className="text-xl text-delft">
-                                <PiEnvelopeLight />
-                            </span>
-                            <div>
-                                <div className="font-medium tracking-wider">E-Mail</div>
-                                <a
-                                    href="mailto:kollegen@zahnarzt-koehnke.de"
-                                    className="mt-1 2xl:text-xl  block font-semibold tracking-wide text-delft-900/90 hover:text-delft-900 break-all md:break-normal"
-                                >
-                                    kollegen@zahnarzt-koehnke.de
-                                </a>
-                            </div>
-                        </div>
+                {/* E-Mail */}
+<div className="flex flex-1 items-center gap-3 min-w-0">
+  <span className="text-xl text-delft">
+    <PiEnvelopeLight />
+  </span>
+
+  <div className="min-w-0">
+    <div className="font-medium tracking-wider">E-Mail</div>
+
+    <a
+      href="mailto:kollegen@zahnarzt-koehnke.de"
+      title="kollegen@zahnarzt-koehnke.de"
+      className="mt-1 block 2xl:text-xl font-semibold tracking-wide text-delft-900/90 hover:text-delft-900
+                 break-words [overflow-wrap:anywhere]"
+    >
+      <span>kollegen</span>
+      <wbr />
+      <span>@</span>
+      <wbr />
+      <span>zahnarzt-</span>
+      <wbr />
+      <span>koehnke.de</span>
+    </a>
+  </div>
+</div>
+
                     </div>
                 </div>
             </div>
