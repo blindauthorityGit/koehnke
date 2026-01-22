@@ -68,13 +68,13 @@ export default function InfoBar() {
   href="mailto:kollegen@zahnarzt-koehnke.de"
   title="kollegen@zahnarzt-koehnke.de"
   className="mt-1 block 2xl:text-xl font-semibold tracking-wide text-delft-900/90 hover:text-delft-900
-             break-words [overflow-wrap:anywhere] min-w-0"
+             [overflow-wrap:anywhere] min-w-0"
 >
   <span>kollegen</span>
   <wbr />
   <span>@</span>
   <wbr />
-  <span>zahnarzt&#8209;koehnke.de</span>
+  <span className="whitespace-nowrap">zahnarzt-koehnke.de</span>
 </a>
   </div>
 </div>
