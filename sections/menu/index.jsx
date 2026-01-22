@@ -135,6 +135,9 @@ export default function Header() {
                     <Link href="/praxis" className="tracking-wider hover:text-primary-600 transition-colors">
                         Praxis
                     </Link>
+                    <Link href="/team" className="tracking-wider hover:text-primary-600 transition-colors">
+                        Team
+                    </Link>
 
                     <Dropdown
                         label="Leistungen"
@@ -252,6 +255,13 @@ export default function Header() {
                                     className="py-2 tracking-wider hover:text-primary-600 transition-colors"
                                 >
                                     Praxis
+                                </Link>
+                                <Link
+                                    href="/team"
+                                    onClick={closeMobile}
+                                    className="py-2 tracking-wider hover:text-primary-600 transition-colors"
+                                >
+                                    Team
                                 </Link>
 
                                 {/* LEISTUNGEN Akkordeon */}
