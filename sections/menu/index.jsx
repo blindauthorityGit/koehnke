@@ -43,7 +43,7 @@ const serviceItems = [
     { label: "Termin buchen", href: "/termin" }, // ggf. /termin-buchen
     { label: "Infos für Neupatienten", href: "/service/neupatienten" }, // ggf. /neupatienten
     { label: "Downloads", href: "/service/downloads" }, // ggf. /service/downloads
-    { label: "Online Anamnese", href: "/service/anamnese" }, // ggf. /service/online-anamnese
+    // { label: "Online Anamnese", href: "/service/anamnese" }, // ggf. /service/online-anamnese
 ];
 
 const NOTDIENST = {

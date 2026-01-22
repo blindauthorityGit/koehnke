@@ -154,7 +154,7 @@ export default function TextImageSection({
                     <div
                         className={`
                             relative h-[260px] overflow-hidden rounded-3xl
-                            sm:h-[320px] md:h-[380px] lg:h-[620px] lg:rounded-[48px]
+                            sm:h-[320px] md:h-[380px] lg:h-[720px] lg:rounded-[48px]
                             ${isImageRight ? "lg:order-2" : ""}
                         `}
                     >
