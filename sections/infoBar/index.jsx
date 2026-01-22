@@ -64,20 +64,18 @@ export default function InfoBar() {
   <div className="min-w-0">
     <div className="font-medium tracking-wider">E-Mail</div>
 
-    <a
-      href="mailto:kollegen@zahnarzt-koehnke.de"
-      title="kollegen@zahnarzt-koehnke.de"
-      className="mt-1 block 2xl:text-xl font-semibold tracking-wide text-delft-900/90 hover:text-delft-900
-                 break-words [overflow-wrap:anywhere]"
-    >
-      <span>kollegen</span>
-      <wbr />
-      <span>@</span>
-      <wbr />
-      <span>zahnarzt-</span>
-      <wbr />
-      <span>koehnke.de</span>
-    </a>
+<a
+  href="mailto:kollegen@zahnarzt-koehnke.de"
+  title="kollegen@zahnarzt-koehnke.de"
+  className="mt-1 block 2xl:text-xl font-semibold tracking-wide text-delft-900/90 hover:text-delft-900
+             break-words [overflow-wrap:anywhere] min-w-0"
+>
+  <span>kollegen</span>
+  <wbr />
+  <span>@</span>
+  <wbr />
+  <span>zahnarzt&#8209;koehnke.de</span>
+</a>
   </div>
 </div>
 
