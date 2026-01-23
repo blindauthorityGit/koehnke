@@ -8,12 +8,16 @@ import {
 } from "@/libs/bewerbung/email";
 
 export const config = {
-    api: { bodyParser: false }, // multipart/form-data
+    api: { bodyParser: false },
 };
 
 const MAX_MB = 15;
 const MAX_BYTES = MAX_MB * 1024 * 1024;
+const SIGNED_URL_DAYS = 5;
 
+// ------------------------------------------------------------
+// Helpers
+// ------------------------------------------------------------
 function asArray(v) {
     if (!v) return [];
     return Array.isArray(v) ? v : [v];
@@ -22,7 +26,9 @@ function asArray(v) {
 function reqStr(fields, key) {
     const v = fields?.[key];
     const s = Array.isArray(v) ? v[0] : v;
-    if (!s || typeof s !== "string" || !s.trim()) throw new Error(`Missing field: ${key}`);
+    if (!s || typeof s !== "string" || !s.trim()) {
+        throw new Error(`Missing field: ${key}`);
+    }
     return s.trim();
 }
 
@@ -44,11 +50,13 @@ function safeName(name) {
         .trim();
 }
 
-async function saveFileToBucket({ bucket, file, destPath }) {
+async function saveFile({ bucket, file, destPath }) {
     const gcsFile = bucket.file(destPath);
 
-    // formidable v2/v3: filepath / mimetype / originalFilename / size
-    await gcsFile.save(await import("fs").then((fs) => fs.promises.readFile(file.filepath)), {
+    const fs = await import("fs");
+    const buffer = await fs.promises.readFile(file.filepath);
+
+    await gcsFile.save(buffer, {
         contentType: "application/pdf",
         resumable: false,
         metadata: {
@@ -56,16 +64,28 @@ async function saveFileToBucket({ bucket, file, destPath }) {
         },
     });
 
-    const [url] = await gcsFile.getSignedUrl({
-        action: "read",
-        expires: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 Tage
-    });
+    return {
+        path: destPath,
+        name: safeName(file.originalFilename),
+    };
+}
 
+async function createSignedUrl(bucket, path) {
+    const file = bucket.file(path);
+    const [url] = await file.getSignedUrl({
+        action: "read",
+        expires: Date.now() + SIGNED_URL_DAYS * 24 * 60 * 60 * 1000,
+    });
     return url;
 }
 
+// ------------------------------------------------------------
+// Handler
+// ------------------------------------------------------------
 export default async function handler(req, res) {
-    if (req.method !== "POST") return res.status(405).json({ ok: false });
+    if (req.method !== "POST") {
+        return res.status(405).json({ ok: false });
+    }
 
     try {
         const form = formidable({
@@ -74,13 +94,15 @@ export default async function handler(req, res) {
         });
 
         const { fields, files } = await new Promise((resolve, reject) => {
-            form.parse(req, (err, fieldsParsed, filesParsed) => {
-                if (err) return reject(err);
-                resolve({ fields: fieldsParsed, files: filesParsed });
+            form.parse(req, (err, f, fl) => {
+                if (err) reject(err);
+                else resolve({ fields: f, files: fl });
             });
         });
 
-        // ---- Felder (vom Frontend FormData)
+        // ------------------------------------------------------------
+        // Required fields
+        // ------------------------------------------------------------
         const jobPostingId = optStr(fields, "jobPostingId");
         const jobSlug = reqStr(fields, "jobSlug");
         const jobTitle = reqStr(fields, "jobTitle");
@@ -105,7 +127,9 @@ export default async function handler(req, res) {
 
         const ref = optStr(fields, "ref");
 
-        // ---- Files
+        // ------------------------------------------------------------
+        // Files
+        // ------------------------------------------------------------
         const cvFile = asArray(files?.cv)[0];
         const coverFile = asArray(files?.coverLetter)[0] || null;
         const attachmentFiles = asArray(files?.attachments);
@@ -114,9 +138,8 @@ export default async function handler(req, res) {
             return res.status(400).json({ ok: false, error: "CV_REQUIRED" });
         }
 
-        // PDF-only / Size checks
-        const all = [cvFile, coverFile, ...attachmentFiles].filter(Boolean);
-        for (const f of all) {
+        const allFiles = [cvFile, coverFile, ...attachmentFiles].filter(Boolean);
+        for (const f of allFiles) {
             if (f.size > MAX_BYTES) {
                 return res.status(400).json({ ok: false, error: "FILE_TOO_LARGE" });
             }
@@ -125,7 +148,9 @@ export default async function handler(req, res) {
             }
         }
 
-        // ---- 1) Firestore create (ohne uploads)
+        // ------------------------------------------------------------
+        // 1) Firestore (ohne URLs!)
+        // ------------------------------------------------------------
         const baseDoc = {
             status: "submitted",
             createdAt: FieldValue.serverTimestamp(),
@@ -163,63 +188,74 @@ export default async function handler(req, res) {
         const docRef = await db.collection("applications").add(baseDoc);
         const id = docRef.id;
 
-        // ---- 2) Uploads in Storage
+        // ------------------------------------------------------------
+        // 2) Uploads → Storage (nur Pfade speichern)
+        // ------------------------------------------------------------
         const bucket = storage.bucket();
         const prefix = `bewerbungen/${id}`;
-
-        const fileLinks = [];
+        const mailFiles = [];
 
         // CV
-        {
-            const name = safeName(cvFile.originalFilename || `lebenslauf-${id}.pdf`);
-            const destPath = `${prefix}/cv-${name}`;
-            const url = await saveFileToBucket({ bucket, file: cvFile, destPath });
-            const item = { label: "Lebenslauf", name, url, path: destPath };
-            fileLinks.push(item);
+        const cv = await saveFile({
+            bucket,
+            file: cvFile,
+            destPath: `${prefix}/cv-${safeName(cvFile.originalFilename)}`,
+        });
+        await docRef.set({ uploads: { cv }, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+        mailFiles.push({ label: "Lebenslauf", ...cv });
 
-            await docRef.set({ uploads: { cv: item }, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
-        }
-
-        // Cover letter optional
+        // Cover Letter (optional)
         if (coverFile) {
-            const name = safeName(coverFile.originalFilename || `motivationsschreiben-${id}.pdf`);
-            const destPath = `${prefix}/cover-${name}`;
-            const url = await saveFileToBucket({ bucket, file: coverFile, destPath });
-            const item = { label: "Motivationsschreiben", name, url, path: destPath };
-            fileLinks.push(item);
-
+            const cover = await saveFile({
+                bucket,
+                file: coverFile,
+                destPath: `${prefix}/cover-${safeName(coverFile.originalFilename)}`,
+            });
             await docRef.set(
-                { uploads: { coverLetter: item }, updatedAt: FieldValue.serverTimestamp() },
-                { merge: true }
+                { uploads: { coverLetter: cover }, updatedAt: FieldValue.serverTimestamp() },
+                { merge: true },
             );
+            mailFiles.push({ label: "Motivationsschreiben", ...cover });
         }
 
-        // Attachments optional (multiple)
-        const attOut = [];
+        // Attachments
+        const attachmentsOut = [];
         for (let i = 0; i < attachmentFiles.length; i++) {
             const f = attachmentFiles[i];
             if (!f) continue;
 
-            const name = safeName(f.originalFilename || `anhang-${i + 1}-${id}.pdf`);
-            const destPath = `${prefix}/attachment-${String(i + 1).padStart(2, "0")}-${name}`;
-            const url = await saveFileToBucket({ bucket, file: f, destPath });
+            const att = await saveFile({
+                bucket,
+                file: f,
+                destPath: `${prefix}/attachment-${i + 1}-${safeName(f.originalFilename)}`,
+            });
 
-            const item = { label: `Anhang ${i + 1}`, name, url, path: destPath };
-            attOut.push(item);
-            fileLinks.push(item);
+            attachmentsOut.push(att);
+            mailFiles.push({ label: `Anhang ${i + 1}`, ...att });
         }
 
-        if (attOut.length) {
+        if (attachmentsOut.length) {
             await docRef.set(
-                { uploads: { attachments: attOut }, updatedAt: FieldValue.serverTimestamp() },
-                { merge: true }
+                { uploads: { attachments: attachmentsOut }, updatedAt: FieldValue.serverTimestamp() },
+                { merge: true },
             );
         }
 
-        // ---- 3) Mails
-        const employerTo = process.env.BEWERBUNG_TO;
-        if (!employerTo) throw new Error("Missing BEWERBUNG_TO env var.");
+        // ------------------------------------------------------------
+        // 3) Signed URLs NUR für Mail erzeugen (5 Tage)
+        // ------------------------------------------------------------
+        const fileLinks = [];
+        for (const f of mailFiles) {
+            const url = await createSignedUrl(bucket, f.path);
+            fileLinks.push({ label: f.label, name: f.name, url });
+        }
 
+        // ------------------------------------------------------------
+        // 4) Mails
+        // ------------------------------------------------------------
+        // LIVE Empfänger kommt aus email.js via category routing:
+        // - DEV_MODE=true => alles an DEV_EMAIL_OVERRIDE
+        // - DEV_MODE=false => Bewerbung an BEWERBUNG_TO_LIVE
         const payload = {
             jobPostingId,
             jobSlug,
@@ -237,16 +273,19 @@ export default async function handler(req, res) {
             experience,
         };
 
-        // Arbeitgeber-Mail (mit Reply-To = Bewerber)
+        // Arbeitgeber-Mail (Kategorie: bewerbung)
         await sendBewerbungEmail({
-            to: employerTo,
+            category: "bewerbung",
+            // "to" ist optional, category routing nimmt BEWERBUNG_TO_LIVE (oder DEV override)
+            to: process.env.BEWERBUNG_TO_LIVE || process.env.BEWERBUNG_TO || "",
             subject: `Neue Bewerbung: ${jobTitle} – ${lastName} ${firstName} (${id})`,
-            html: buildEmployerApplicationEmailHtml(payload, { id, fileLinks }),
+            html: buildEmployerApplicationEmailHtml(payload, { id, fileLinks, expiresDays: SIGNED_URL_DAYS }),
             replyTo: email,
         });
 
-        // Bewerber-Mail (Danke)
+        // Bewerber-Mail (Kategorie: custom, aber DEV override greift ebenfalls)
         await sendBewerbungEmail({
+            category: "custom",
             to: email,
             subject: `Vielen Dank für Ihre Bewerbung – ${jobTitle}`,
             html: buildApplicantThanksEmailHtml({ firstName, lastName, jobTitle }),
@@ -254,7 +293,7 @@ export default async function handler(req, res) {
 
         return res.status(200).json({ ok: true, id });
     } catch (e) {
-        console.error("APPLICATION API ERROR:", e?.message || e);
+        console.error("APPLICATION API ERROR:", e);
         return res.status(400).json({ ok: false, error: "BAD_REQUEST" });
     }
 }

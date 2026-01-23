@@ -1,6 +1,9 @@
-import Head from "next/head";
+// pages/kontakt.js (oder pages/kontakt/index.js)
 import { sanityClient } from "@/client";
 import { contactPageQuery } from "@/libs/queries";
+
+import Seo from "@/components/seo";
+import { mapSanitySeoToSeoProps } from "@/helpers/seoMap"; // wie zuvor
 
 import ContactHero from "@/sections/contactHero";
 
@@ -18,12 +21,28 @@ export async function getStaticProps() {
 export default function Kontakt({ contactPage }) {
     if (!contactPage) return null;
 
+    // Falls dein contactPage ein seo-Objekt hat (empfohlen), wird es genutzt:
+    const sanitySeo = contactPage?.seo || null;
+
+    const fallbackTitle = contactPage?.seo?.metaTitle || contactPage?.title || "Kontakt";
+
+    const fallbackDescription =
+        contactPage?.seo?.metaDescription ||
+        contactPage?.intro ||
+        "Kontakt, Anfahrt und Öffnungszeiten – Zentrum für Zahnmedizin Dr. Köhnke & Kollegen.";
+
+    const fallbackUrl = "https://www.zahnarztpraxis-hattersheim.de/kontakt";
+
+    const seoProps = mapSanitySeoToSeoProps({
+        seo: sanitySeo,
+        fallbackTitle,
+        fallbackDescription,
+        fallbackUrl,
+    });
+
     return (
         <>
-            <Head>
-                <title>{contactPage.title || "Kontakt"}</title>
-                <meta name="description" content={contactPage.intro || "Kontakt & Anfahrt"} />
-            </Head>
+            <Seo {...seoProps} />
 
             <main>
                 <ContactHero page={contactPage} />

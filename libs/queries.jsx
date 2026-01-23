@@ -543,10 +543,8 @@ export const singleJobQuery = `
       asset->
     },
 
-    // Inhalte für Detailseite
-    tasks,
-    profile,
-    benefits,
+    // Inhalte für Detailseite (Rich Text)
+    detailContent,
 
     seo
   }
@@ -642,6 +640,37 @@ export const contactPageQuery = `
     lat,
     lng,
     zoom
+  }
+}
+`;
+
+export const PRACTICE_MODAL_QUERY = /* groq */ `
+*[_type == "practiceModal" && _id == "practiceModal"][0]{
+  _id,
+  _updatedAt,
+  enabled,
+  version,
+  reopenOnChange,
+  schedule{ start, end },
+  headline,
+  text,
+  image{
+    asset->{ url },
+    alt
+  },
+  cta{
+    enabled,
+    label,
+    link{
+      type,
+      newTab,
+      external,
+      internal->{
+        _id,
+        _type,
+        "slug": slug.current
+      }
+    }
   }
 }
 `;

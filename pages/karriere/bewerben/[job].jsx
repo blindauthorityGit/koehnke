@@ -113,8 +113,8 @@ function StepPill({ active, done, children }) {
                 done
                     ? "bg-slate-900 text-white"
                     : active
-                    ? "bg-slate-200 text-slate-900"
-                    : "bg-slate-100 text-slate-500",
+                      ? "bg-slate-200 text-slate-900"
+                      : "bg-slate-100 text-slate-500",
             ].join(" ")}
         >
             {children}
@@ -392,7 +392,7 @@ export default function ApplyPage({ jobPosting }) {
                                         <Input
                                             value={form.email}
                                             onChange={(v) => updateField("email", v)}
-                                            placeholder="max@beispiel.at"
+                                            placeholder="max@beispiel.de"
                                             autoComplete="email"
                                             inputMode="email"
                                         />
@@ -402,7 +402,7 @@ export default function ApplyPage({ jobPosting }) {
                                         <Input
                                             value={form.phone}
                                             onChange={(v) => updateField("phone", v)}
-                                            placeholder="+43 ..."
+                                            placeholder="+49 ..."
                                             autoComplete="tel"
                                             inputMode="tel"
                                         />
@@ -413,7 +413,7 @@ export default function ApplyPage({ jobPosting }) {
                                     <Input
                                         value={form.city}
                                         onChange={(v) => updateField("city", v)}
-                                        placeholder="z. B. 1010 Wien"
+                                        placeholder="z. B. 65795 Hattersheim"
                                         autoComplete="address-level2"
                                     />
                                 </Field>
@@ -603,8 +603,18 @@ export default function ApplyPage({ jobPosting }) {
                                                 className="mt-1 h-4 w-4"
                                             />
                                             <span>
-                                                Ich habe die Datenschutzhinweise gelesen und willige ein, dass meine
-                                                Angaben zur Bearbeitung der Bewerbung verarbeitet werden.
+                                                Ich habe die{" "}
+                                                <a
+                                                    href="/datenschutz"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="underline hover:text-slate-900"
+                                                >
+                                                    Datenschutzhinweise
+                                                </a>{" "}
+                                                gelesen und willige ein, dass meine Angaben zur Bearbeitung meiner
+                                                Bewerbung und zur Kontaktaufnahme im Rahmen des Bewerbungsverfahrens
+                                                verarbeitet werden.
                                             </span>
                                         </label>
                                         {errors.privacyAccepted ? (

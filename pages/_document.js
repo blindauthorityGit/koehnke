@@ -4,6 +4,8 @@ export default function Document() {
     return (
         <Html lang="de">
             <Head>
+                <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
                 <link rel="stylesheet" href="https://use.typekit.net/xpr5jiz.css"></link>
             </Head>
             <body className="antialiased">

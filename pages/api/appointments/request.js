@@ -1,6 +1,6 @@
 // pages/api/appointments/request.js
-import nodemailer from "nodemailer";
 import { db, FieldValue } from "@/libs/firebase/admin";
+import { sendMail } from "@/libs/bewerbung/email";
 
 const DAYS = new Set(["Mo", "Di", "Mi", "Do", "Fr"]);
 const REASONS = new Set(["Kontrolle", "Prophylaxe", "Schmerzen / Notfall", "Beratung", "Ästhetik", "Sonstiges"]);
@@ -18,7 +18,6 @@ function normalizeStr(v, max = 500) {
 }
 
 function normalizePhone(v) {
-    // bewusst tolerant, weil internationale Nummern / Leerzeichen
     return normalizeStr(v, 40);
 }
 
@@ -50,7 +49,6 @@ function validate(body) {
     if (!consentPrivacy) errors.consentPrivacy = "Missing consentPrivacy";
     if (!preferredDays.length) errors.preferredDays = "Missing preferredDays";
 
-    // allow only known values
     if (reason && !REASONS.has(reason)) errors.reason = "Invalid reason";
     if (preferredTime && !TIMES.has(preferredTime)) errors.preferredTime = "Invalid preferredTime";
     if (preferredDays.some((d) => !DAYS.has(d))) errors.preferredDays = "Invalid preferredDays";
@@ -74,7 +72,7 @@ function validate(body) {
     };
 }
 
-function buildPracticeEmailText(data) {
+function buildPracticeEmailText(data, firestoreId) {
     return [
         "Neue Terminanfrage",
         "",
@@ -91,10 +89,12 @@ function buildPracticeEmailText(data) {
         "",
         `Kontakt erlaubt: ${data.consentContact ? "Ja" : "Nein"}`,
         `Datenschutz akzeptiert: ${data.consentPrivacy ? "Ja" : "Nein"}`,
+        "",
+        `Firestore-ID: ${firestoreId}`,
     ].join("\n");
 }
 
-function buildPracticeEmailHtml(data) {
+function buildPracticeEmailHtml(data, firestoreId) {
     const esc = (s) =>
         String(s ?? "")
             .replaceAll("&", "&amp;")
@@ -106,24 +106,28 @@ function buildPracticeEmailHtml(data) {
   <div style="font-family:Arial,Helvetica,sans-serif; line-height:1.5; color:#0b1f3a;">
     <h2 style="margin:0 0 12px;">Neue Terminanfrage</h2>
     <table style="border-collapse:collapse; width:100%; max-width:700px;">
-      <tr><td style="padding:6px 0; width:180px;"><b>Name</b></td><td style="padding:6px 0;">${esc(
-          data.firstName
-      )} ${esc(data.lastName)}</td></tr>
+      <tr><td style="padding:6px 0; width:180px;"><b>Name</b></td><td style="padding:6px 0;">${esc(data.firstName)} ${esc(
+          data.lastName,
+      )}</td></tr>
       <tr><td style="padding:6px 0;"><b>Telefon</b></td><td style="padding:6px 0;">${esc(data.phone)}</td></tr>
       <tr><td style="padding:6px 0;"><b>E-Mail</b></td><td style="padding:6px 0;">${esc(data.email || "-")}</td></tr>
       <tr><td style="padding:6px 0;"><b>Grund</b></td><td style="padding:6px 0;">${esc(data.reason)}</td></tr>
       <tr><td style="padding:6px 0;"><b>Wunschtage</b></td><td style="padding:6px 0;">${esc(
-          data.preferredDays.join(", ")
+          data.preferredDays.join(", "),
       )}</td></tr>
       <tr><td style="padding:6px 0;"><b>Uhrzeit</b></td><td style="padding:6px 0;">${esc(data.preferredTime)}</td></tr>
       <tr><td style="padding:10px 0; vertical-align:top;"><b>Nachricht</b></td><td style="padding:10px 0;">${
           data.message ? esc(data.message).replaceAll("\n", "<br/>") : "-"
       }</td></tr>
       <tr><td style="padding:6px 0;"><b>Kontakt erlaubt</b></td><td style="padding:6px 0;">${esc(
-          data.consentContact ? "Ja" : "Nein"
+          data.consentContact ? "Ja" : "Nein",
       )}</td></tr>
     </table>
+
     <p style="margin:14px 0 0; font-size:12px; color:#425a75;">
+      Firestore-ID: <b>${esc(firestoreId)}</b>
+    </p>
+    <p style="margin:10px 0 0; font-size:12px; color:#425a75;">
       Hinweis: Anfrage wurde über die Website gesendet und in Firestore gespeichert.
     </p>
   </div>`;
@@ -141,11 +145,18 @@ function buildCustomerEmailText(practiceName) {
 }
 
 function buildCustomerEmailHtml(practiceName) {
+    const esc = (s) =>
+        String(s ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;");
+
     return `
   <div style="font-family:Arial,Helvetica,sans-serif; line-height:1.5; color:#0b1f3a;">
     <h2 style="margin:0 0 10px;">Vielen Dank für Ihre Terminanfrage</h2>
     <p style="margin:0 0 10px;">
-      Vielen Dank für Ihre Anfrage bei <b>${practiceName}</b>.
+      Vielen Dank für Ihre Anfrage bei <b>${esc(practiceName)}</b>.
       Wir melden uns zeitnah zur Terminbestätigung.
     </p>
     <p style="margin:0; font-size:12px; color:#425a75;">
@@ -154,32 +165,16 @@ function buildCustomerEmailHtml(practiceName) {
   </div>`;
 }
 
-function getTransporter() {
-    // SMTP (z.B. IONOS, Outlook, Google Workspace, etc.)
-    return nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT || 587),
-        secure: String(process.env.SMTP_SECURE || "false") === "true", // true for 465
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-        },
-    });
-}
-
 export default async function handler(req, res) {
     if (req.method !== "POST") {
         res.setHeader("Allow", ["POST"]);
         return res.status(405).json({ message: "Method not allowed" });
     }
 
-    // Optional: simple rate limiting by IP (lightweight, best-effort)
-    // Für richtiges Rate-Limit später Upstash/Redis etc.
     const ip = (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || req.socket?.remoteAddress || "unknown";
-
     const { ok, errors, cleaned } = validate(req.body || {});
 
-    // Honeypot: nicht verraten, dass Bot erkannt wurde
+    // Honeypot
     if (cleaned.website) {
         return res.status(200).json({ ok: true });
     }
@@ -189,15 +184,9 @@ export default async function handler(req, res) {
     }
 
     const practiceName = process.env.PRACTICE_NAME || "Zentrum für Zahnmedizin";
-    const practiceEmail = process.env.PRACTICE_INBOX_EMAIL;
-    const fromEmail = process.env.MAIL_FROM; // z.B. "Zentrum für Zahnmedizin <no-reply@domain.tld>"
-
-    if (!practiceEmail || !fromEmail) {
-        return res.status(500).json({ message: "Mail config missing (PRACTICE_INBOX_EMAIL / MAIL_FROM)" });
-    }
+    const practiceEmailFallback = process.env.PRACTICE_INBOX_EMAIL; // fallback, falls CONTACT_TO_LIVE nicht gesetzt ist
 
     // Firestore Document
-    const now = new Date();
     const doc = {
         type: "appointmentRequest",
         status: "new",
@@ -234,31 +223,29 @@ export default async function handler(req, res) {
     }
 
     // Emails
-    const transporter = getTransporter();
-
     const practiceSubject = `Neue Terminanfrage: ${cleaned.firstName} ${cleaned.lastName}`;
-    const practiceText = buildPracticeEmailText(cleaned);
-    const practiceHtml = buildPracticeEmailHtml(cleaned);
+    const practiceText = buildPracticeEmailText(cleaned, docRef.id);
+    const practiceHtml = buildPracticeEmailHtml(cleaned, docRef.id);
 
     const customerSubject = `Ihre Terminanfrage bei ${practiceName}`;
     const customerText = buildCustomerEmailText(practiceName);
     const customerHtml = buildCustomerEmailHtml(practiceName);
 
     try {
-        // 1) Praxis E-Mail
-        await transporter.sendMail({
-            from: fromEmail,
-            to: practiceEmail,
-            replyTo: cleaned.email || undefined, // falls Patient antwortfähig ist
+        // 1) Praxis-Mail (DEV override / LIVE = CONTACT_TO_LIVE)
+        await sendMail({
+            category: "appointment",
+            to: process.env.CONTACT_TO_LIVE || practiceEmailFallback,
+            replyTo: cleaned.email && isEmail(cleaned.email) ? cleaned.email : undefined,
             subject: practiceSubject,
-            text: practiceText + `\n\nFirestore-ID: ${docRef.id}`,
-            html: practiceHtml + `<p style="font-size:12px;color:#425a75;">Firestore-ID: <b>${docRef.id}</b></p>`,
+            text: practiceText,
+            html: practiceHtml,
         });
 
         // 2) Patient Bestätigung (nur wenn Email vorhanden)
         if (cleaned.email && isEmail(cleaned.email)) {
-            await transporter.sendMail({
-                from: fromEmail,
+            await sendMail({
+                category: "custom", // in DEV geht das ebenfalls an DEV override
                 to: cleaned.email,
                 subject: customerSubject,
                 text: customerText,
@@ -266,9 +253,9 @@ export default async function handler(req, res) {
             });
         }
 
-        // Optional: Firestore Status updaten
         await docRef.update({
             status: "emailed",
+            updatedAt: FieldValue.serverTimestamp(),
             email: {
                 practiceNotified: true,
                 customerNotified: Boolean(cleaned.email && isEmail(cleaned.email)),
@@ -278,11 +265,15 @@ export default async function handler(req, res) {
 
         return res.status(200).json({ ok: true });
     } catch (e) {
-        // Falls Mail fehlschlägt: Request bleibt gespeichert -> status markieren
         try {
             await docRef.update({
                 status: "email_failed",
-                email: { practiceNotified: false, customerNotified: false, errorAt: FieldValue.serverTimestamp() },
+                updatedAt: FieldValue.serverTimestamp(),
+                email: {
+                    practiceNotified: false,
+                    customerNotified: false,
+                    errorAt: FieldValue.serverTimestamp(),
+                },
             });
         } catch (_) {}
 

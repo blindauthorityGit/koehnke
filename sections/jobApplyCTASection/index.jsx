@@ -36,7 +36,7 @@ export default function JobApplyCTASection({
                         <Link href={href}>
                             <BasicButton
                                 icon={<BsPersonCheck className="h-4 w-4" />}
-                                className="bg-white text-delft hover:bg-white/90"
+                                className="bg-white cursor-pointer text-delft "
                             >
                                 Jetzt bewerben
                             </BasicButton>

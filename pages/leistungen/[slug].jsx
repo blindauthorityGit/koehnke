@@ -1,7 +1,5 @@
 // pages/leistungen/[slug].jsx
 
-import Head from "next/head";
-
 import { sanityClient } from "@/client";
 import { singleServiceQuery } from "@/libs/queries";
 
@@ -9,25 +7,23 @@ import DetailHero from "@/sections/heroDetail";
 import TextImageSection from "@/sections/textImageFull";
 import InfoBar from "@/sections/infoBar";
 
-// WICHTIG: Neuer korrekter Import der LeistungenSection
 import LeistungenSection from "@/sections/leistungen";
 import AppointmentCTASection from "@/sections/cta";
 
-// NEU:
-import Seo from "@/components/seo";
+// SEO
+import Seo from "@/components/seo"; // <- Achte auf Groß/Klein: du hast beides genutzt
 import { seoFromSanity } from "@/libs/seoFromSanity";
 
 export async function getStaticPaths() {
-    // Alle Slugs für Services vorab holen
     const slugs = await sanityClient.fetch(`*[_type == "service" && defined(slug.current)].slug.current`);
 
-    const paths = slugs.map((slug) => ({
+    const paths = (slugs || []).map((slug) => ({
         params: { slug },
     }));
 
     return {
         paths,
-        fallback: "blocking", // neue Leistungen werden on demand generiert
+        fallback: "blocking",
     };
 }
 
@@ -36,19 +32,29 @@ export async function getStaticProps({ params }) {
         slug: params.slug,
     });
 
-    if (!data?.service) {
-        return { notFound: true };
-    }
+    if (!data?.service) return { notFound: true };
 
-    const seo = seoFromSanity(data.service, {
-        baseUrl: "https://www.zahnarzt-koehnke.de",
-        basePath: "leistungen", // ergibt /leistungen/slug
-        siteName: "Zahnarztpraxis Köhnke",
+    const service = data.service;
+
+    // Wichtig: baseUrl konsistent zur Domain, die du wirklich indexieren willst.
+    const baseUrl = "https://www.zahnarztpraxis-hattersheim.de";
+
+    // seoFromSanity soll idealerweise:
+    // - metaTitle / metaDescription aus service.seo ziehen
+    // - Canonical auf `${baseUrl}/leistungen/${service.slug}` setzen
+    // - OG Image aus service.seo.ogImage und/oder service.heroImage ableiten
+    const seo = seoFromSanity(service, {
+        baseUrl,
+        basePath: "leistungen", // => /leistungen/<slug>
+        siteName: "Zentrum für Zahnmedizin | Dr. Köhnke & Kollegen",
+        // Optional (falls dein Helper das unterstützt):
+        // fallbackTitle: service.title,
+        // fallbackDescription: service.teaser,
     });
 
     return {
         props: {
-            service: data.service,
+            service,
             services: data.services || [],
             seo,
         },
@@ -57,21 +63,14 @@ export async function getStaticProps({ params }) {
 }
 
 export default function ServicePage({ service, services, seo }) {
-    const heroImage = service.heroImage || service.seo?.ogImage || null;
-
-    const pageTitle = service.seo?.metaTitle || `${service.title} – Dr. Köhnke & Kollegen`;
-    const metaDescription = service.seo?.metaDescription || service.teaser || "";
-
-    console.log(service, services);
+    const heroImage = service?.heroImage || service?.seo?.ogImage || null;
 
     return (
         <>
-            {/* SEO / Head */}
             <Seo {...seo} />
 
-            {/* HERO */}
             <DetailHero
-                key={service.slug} // WICHTIG: remount bei neuem Slug
+                key={service.slug} // remount bei Slug-Wechsel
                 title={service.title}
                 subtitle={service.teaser}
                 image={heroImage}
@@ -79,10 +78,9 @@ export default function ServicePage({ service, services, seo }) {
 
             <InfoBar />
 
-            {/* INTRO SECTION ALS TEXT/BILD */}
-            {service.introSection && (
+            {service?.introSection && (
                 <TextImageSection
-                    key={`intro-${service.slug}`} // 👈 remount bei Routewechsel
+                    key={`intro-${service.slug}`}
                     noCenter
                     section={service.introSection}
                     id="service-intro"
@@ -90,8 +88,8 @@ export default function ServicePage({ service, services, seo }) {
                 />
             )}
 
-            {/* Leistungen-Übersicht aus Sanity */}
             <LeistungenSection services={services} currentSlug={service.slug} headline="Weitere Leistungen" />
+
             <AppointmentCTASection />
         </>
     );
