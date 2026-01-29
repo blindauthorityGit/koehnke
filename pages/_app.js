@@ -9,6 +9,7 @@ import PracticeModal from "@/components/modals/PracticeModal"; // <- anpassen, f
 
 import { sanityClient } from "@/client";
 import { PRACTICE_MODAL_QUERY } from "@/libs/queries";
+import CookieBanner from "@/components/cookieBanner";
 
 export default function App({ Component, pageProps }) {
     const [modalData, setModalData] = useState(null);
@@ -41,6 +42,8 @@ export default function App({ Component, pageProps }) {
 
             <Menu />
             <Component {...pageProps} />
+            <CookieBanner />
+
             <Footer />
         </AppointmentModalProvider>
     );
